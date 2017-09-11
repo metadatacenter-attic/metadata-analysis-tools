@@ -27,7 +27,7 @@ public final class GenericValidator extends RecordValidator {
 
   @Nonnull
   @Override
-  public RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) throws InvalidPackageException {
+  public RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) {
     List<AttributeGroupValidationReport> attributeGroupValidationReports = new ArrayList<>();
     Map<String,Attribute> map = biosample.getAttributes();
     List<AttributeValidationReport> ontologyTermAttributeReports = validateOntologyTermAttributes(map);
@@ -58,10 +58,9 @@ public final class GenericValidator extends RecordValidator {
       AttributeValidationReport report;
       if(attribute != null) {
         Optional<AttributeValidationReport> reportOpt = validateOntologyTermAttributes(attribute);
-        report = reportOpt.orElseGet(() -> new AttributeValidationReport(attribute, false, false));
+        report = reportOpt.orElseGet(() -> Utils.getMissingAttributeReport(attribute));
       } else {
-        report = new AttributeValidationReport(
-            new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+        report = Utils.getMissingAttributeReport(attrName);
       }
       ontologyTermAttributeReports.add(report);
     }
@@ -76,14 +75,9 @@ public final class GenericValidator extends RecordValidator {
       AttributeValidationReport report;
       if (attribute != null) {
         Optional<AttributeValidationReport> reportOpt = validateTermAttributes(attribute);
-        if (reportOpt.isPresent()) {
-          report = reportOpt.get();
-        } else {
-          report = new AttributeValidationReport(attribute, false, false);
-        }
+        report = reportOpt.orElseGet(() -> Utils.getMissingAttributeReport(attribute));
       } else {
-        report = new AttributeValidationReport(
-            new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+        report = Utils.getMissingAttributeReport(attrName);
       }
       termAttributeReports.add(report);
     }
@@ -99,8 +93,7 @@ public final class GenericValidator extends RecordValidator {
       if (attribute != null) {
         report = validateIntegerAttribute(attribute);
       } else {
-        report = new AttributeValidationReport(
-            new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+        report = Utils.getMissingAttributeReport(attrName);
       }
       integerAttributeReports.add(report);
     }
@@ -116,8 +109,7 @@ public final class GenericValidator extends RecordValidator {
       if (attribute != null) {
         report = validateBooleanAttribute(attribute);
       } else {
-        report = new AttributeValidationReport(
-            new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+        report = Utils.getMissingAttributeReport(attrName);
       }
       booleanAttributeReports.add(report);
     }
@@ -133,8 +125,7 @@ public final class GenericValidator extends RecordValidator {
       if (attribute != null) {
         report = validateValueSetAttributes(attribute);
       } else {
-        report = new AttributeValidationReport(
-            new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+        report = Utils.getMissingAttributeReport(attrName);
       }
       reports.add(report);
     }
@@ -183,25 +174,25 @@ public final class GenericValidator extends RecordValidator {
     String attrName = attribute.getName();
     AttributeValidationReport report = null;
     if(attrName.equalsIgnoreCase(BODY_HABITAT_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     else if(attrName.equalsIgnoreCase(GEO_LOCATION_ATTR_NAME)) {
       report = validateGeographicLocation(attribute);
     }
     else if(attrName.equalsIgnoreCase(HEALTH_STATE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     else if(attrName.equalsIgnoreCase(HOST_BODY_HABITAT_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     else if(attrName.equalsIgnoreCase(PATHOGENICITY_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     else if(attrName.equalsIgnoreCase(PLOIDY_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     else if(attrName.equalsIgnoreCase(PROPAGATION_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, false);
+      report = validateOntologyTermAttribute(attribute, true);
     }
     return Optional.ofNullable(report);
   }
@@ -212,16 +203,18 @@ public final class GenericValidator extends RecordValidator {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = false;
+    String match = null;
     if(isFilledIn && VALUE_SETS.containsKey(attrName)) {
       List<String> values = VALUE_SETS.get(attrName);
       for(String v : values) {
         if(value.equalsIgnoreCase(v)) {
           isValidFormat = true;
+          match = v;
           break;
         }
       }
     }
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.ofNullable(match));
   }
 
   @Nonnull
@@ -230,6 +223,7 @@ public final class GenericValidator extends RecordValidator {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = false;
+    String match = null;
     if(isFilledIn) {
       TermValidationReport report;
       if (ontologies.length > 0) {
@@ -238,8 +232,9 @@ public final class GenericValidator extends RecordValidator {
         report = termValidator.validateTerm(normalize(value), exactMatch);
       }
       isValidFormat = report.isResolvableOntologyClass();
+      match = report.getMatchValue();
     }
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.ofNullable(match));
   }
 
   @Nonnull
@@ -250,7 +245,7 @@ public final class GenericValidator extends RecordValidator {
     if(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
       isValidFormat = true;
     }
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.empty());
   }
 
   @Nonnull
@@ -266,7 +261,7 @@ public final class GenericValidator extends RecordValidator {
         isValidFormat = false;
       }
     }
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.empty());
   }
 
   /**

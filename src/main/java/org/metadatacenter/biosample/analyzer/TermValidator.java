@@ -54,10 +54,12 @@ public final class TermValidator {
       String ontologyType = node.get("ontologyType").textValue();
       boolean isOntology = isOntology(ontologyType);
 
-      return new TermValidationReport(isOntology, isOWLClass, true); // IRIs from BioPortal are resolvable
+      String value = node.get("@id").textValue();
+
+      return new TermValidationReport(value, isOntology, isOWLClass, true); // IRIs from BioPortal are resolvable
     }
     else {
-      return new TermValidationReport(false, false, false);
+      return new TermValidationReport("", false, false, false);
     }
   }
 

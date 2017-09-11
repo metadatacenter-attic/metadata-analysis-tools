@@ -5,6 +5,7 @@ import com.google.common.base.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -18,11 +19,13 @@ public final class AttributeValidationReport {
   @Nonnull private final Attribute attribute;
   private final boolean isFilledIn;
   private final boolean isValidFormat;
+  private Optional<String> matchValue;
 
-  public AttributeValidationReport(@Nonnull Attribute attribute, boolean isFilledIn, boolean isValidFormat) {
+  public AttributeValidationReport(@Nonnull Attribute attribute, boolean isFilledIn, boolean isValidFormat, Optional<String> matchValue) {
     this.attribute = checkNotNull(attribute);
     this.isFilledIn = checkNotNull(isFilledIn);
     this.isValidFormat = checkNotNull(isValidFormat);
+    this.matchValue = checkNotNull(matchValue);
   }
 
   @Nonnull
@@ -40,6 +43,10 @@ public final class AttributeValidationReport {
 
   public boolean isValidFormat() {
     return isValidFormat;
+  }
+
+  public Optional<String> getMatchValue() {
+    return matchValue;
   }
 
   @Override

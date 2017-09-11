@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 public interface Validator {
 
   @Nonnull
-  RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) throws InvalidPackageException;
+  RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample);
 
   boolean isValid(@Nonnull RecordValidationReport report);
 

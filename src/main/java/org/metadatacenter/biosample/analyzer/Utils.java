@@ -1,10 +1,10 @@
 package org.metadatacenter.biosample.analyzer;
 
+import javax.annotation.Nonnull;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -55,8 +55,14 @@ public class Utils {
     return validLocations;
   }
 
-  public static AttributeValidationReport getMissingAttributeReport(String attrName) {
-    return new AttributeValidationReport(new AttributeImpl(attrName, attrName, attrName, ""), false, false);
+  public static AttributeValidationReport getMissingAttributeReport(@Nonnull String attrName) {
+    checkNotNull(attrName);
+    return getMissingAttributeReport(new AttributeImpl(attrName, attrName, attrName, ""));
+  }
+
+  public static AttributeValidationReport getMissingAttributeReport(@Nonnull Attribute attribute) {
+    checkNotNull(attribute);
+    return new AttributeValidationReport(attribute, false, false, Optional.empty());
   }
 
 }

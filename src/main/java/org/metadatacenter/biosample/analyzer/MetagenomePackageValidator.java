@@ -2,8 +2,10 @@ package org.metadatacenter.biosample.analyzer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Rafael Gonçalves <br>
@@ -32,9 +34,9 @@ public final class MetagenomePackageValidator extends RecordValidator {
 
   @Nonnull
   @Override
-  public RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) throws InvalidPackageException {
+  public RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) {
     if(!biosample.getPackageName().equalsIgnoreCase(NAME)) {
-      throw new InvalidPackageException("Package " + biosample.getPackageName() + " is not the expected sample package ("
+      throw new RuntimeException("Package " + biosample.getPackageName() + " is not the expected sample package ("
           + NAME + ") for this validator");
     }
     List<AttributeGroupValidationReport> attributeGroupValidationReports = new ArrayList<>();
@@ -171,7 +173,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = isValidDateFormat(value);
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.empty());
   }
 
   // required attribute
@@ -180,7 +182,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = isValidCoordinateFormat(value);
-    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat);
+    return new AttributeValidationReport(attribute, isFilledIn, isValidFormat, Optional.empty());
   }
 
   // either this or isolation source must be provided
@@ -188,7 +190,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateHost(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // either this or host must be provided
@@ -196,7 +198,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateIsolationSource(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // optional attribute
@@ -204,7 +206,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateRefBioMaterial(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // optional attribute
@@ -212,7 +214,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateSampleCollectionDevice(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // optional attribute
@@ -220,7 +222,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateSampleMaterialProcessing(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // optional attribute
@@ -228,7 +230,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateSampleSize(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
   // optional attribute
@@ -236,31 +238,7 @@ public final class MetagenomePackageValidator extends RecordValidator {
   private AttributeValidationReport validateSourceMaterialId(@Nonnull Attribute attribute) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
-    return new AttributeValidationReport(attribute, isFilledIn, true);
-  }
-
-  /**
-   * Check that date of sampling is in "DD-Mmm-YYYY", "Mmm-YYYY" or "YYYY" format (eg., 30-Oct-1990, Oct-1990 or 1990) or
-   * ISO 8601 standard "YYYY-mm-dd", "YYYY-mm" or "YYYY-mm-ddThh:mm:ss" (eg., 1990-10-30, 1990-10 or 1990-10-30T14:41:36)
-   */
-  private boolean isValidDateFormat(String date) {
-    Pattern datePattern = Pattern.compile("(^\\d{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(" +
-        "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(\\d{4})$");
-    boolean matchesPattern = datePattern.matcher(date).matches();
-
-    Pattern isoPattern = Pattern.compile("(^(\\d{4})\\D?(0[1-9]|1[0-2])\\D?([12]\\d|0[1-9]|3[01])(\\D?" +
-        "([01]\\d|2[0-3])\\D?([0-5]\\d)\\D?([0-5]\\d)?\\D?(\\d{3})?)?)|(\\d{4}-\\d{2}-\\d{2})|(\\d{4}-\\d{2})$");
-    boolean matchesIsoPattern = isoPattern.matcher(date).matches();
-
-    return matchesPattern || matchesIsoPattern;
-  }
-
-  /**
-   * Check that latitude and longitude are specified as degrees in format "d[d.dddd] N|S d[dd.dddd] W|E", eg, 38.98 N 77.11 W
-   */
-  private boolean isValidCoordinateFormat(String coordinates) {
-    Pattern coordinatePattern = Pattern.compile("(\\d{0,3}(\\.\\d+)?)[ ]?(N|S) (\\d{0,3}(\\.\\d+)?)[ ]?(E|W)$");
-    return coordinatePattern.matcher(coordinates).matches();
+    return new AttributeValidationReport(attribute, isFilledIn, true, Optional.empty());
   }
 
 }
