@@ -30,17 +30,11 @@ public final class GenericValidator extends RecordValidator {
   public RecordValidationReport validateBioSampleRecord(@Nonnull Record biosample) {
     List<AttributeGroupValidationReport> attributeGroupValidationReports = new ArrayList<>();
     Map<String,Attribute> map = biosample.getAttributes();
-    List<AttributeValidationReport> ontologyTermAttributeReports = validateOntologyTermAttributes(map);
-    List<AttributeValidationReport> termAttributeReports = validateTermAttributes(map);
-    List<AttributeValidationReport> booleanAttributeReports = validateBooleanAttributes(map);
-    List<AttributeValidationReport> integerAttributeReports = validateIntegerAttributes(map);
-    List<AttributeValidationReport> valueSetAttributeReports = validateValueSetAttributes(map);
-
-    attributeGroupValidationReports.add(new AttributeGroupValidationReport("ontologyTerms", ontologyTermAttributeReports));
-    attributeGroupValidationReports.add(new AttributeGroupValidationReport("terms", termAttributeReports));
-    attributeGroupValidationReports.add(new AttributeGroupValidationReport("boolean", booleanAttributeReports));
-    attributeGroupValidationReports.add(new AttributeGroupValidationReport("integer", integerAttributeReports));
-    attributeGroupValidationReports.add(new AttributeGroupValidationReport("valueSet", valueSetAttributeReports));
+    attributeGroupValidationReports.add(validateOntologyTermAttributes(map));
+    attributeGroupValidationReports.add(validateTermAttributes(map));
+    attributeGroupValidationReports.add(validateBooleanAttributes(map));
+    attributeGroupValidationReports.add(validateIntegerAttributes(map));
+    attributeGroupValidationReports.add(validateValueSetAttributes(map));
     if(recordValidators.length > 0) {
       for (RecordValidator recordValidator : recordValidators) {
         RecordValidationReport report = recordValidator.validateBioSampleRecord(biosample);
@@ -51,43 +45,45 @@ public final class GenericValidator extends RecordValidator {
   }
 
   @Nonnull
-  private List<AttributeValidationReport> validateOntologyTermAttributes(@Nonnull Map<String,Attribute> map) {
+  private AttributeGroupValidationReport validateOntologyTermAttributes(@Nonnull Map<String,Attribute> map) {
     List<AttributeValidationReport> ontologyTermAttributeReports = new ArrayList<>();
-    for(String attrName : ONTOLOGY_TERM_ATTR_NAMES) {
+    for (AttributeSchema schema : BioSampleAttributes.getAttributesOfType(AttributeType.ONTOLOGY_TERM)) {
+      String attrName = schema.getName();
       Attribute attribute = map.get(attrName);
       AttributeValidationReport report;
       if(attribute != null) {
-        Optional<AttributeValidationReport> reportOpt = validateOntologyTermAttributes(attribute);
-        report = reportOpt.orElseGet(() -> Utils.getMissingAttributeReport(attribute));
+        report = validateOntologyTermAttribute(attribute, true,
+            schema.getValues().toArray(new String[schema.getValues().size()]));
       } else {
         report = Utils.getMissingAttributeReport(attrName);
       }
       ontologyTermAttributeReports.add(report);
     }
-    return ontologyTermAttributeReports;
+    return new AttributeGroupValidationReport(AttributeType.ONTOLOGY_TERM.name().toLowerCase(), ontologyTermAttributeReports);
   }
 
   @Nonnull
-  private List<AttributeValidationReport> validateTermAttributes(@Nonnull Map<String, Attribute> map) {
+  private AttributeGroupValidationReport validateTermAttributes(@Nonnull Map<String, Attribute> map) {
     List<AttributeValidationReport> termAttributeReports = new ArrayList<>();
-    for (String attrName : TERM_ATTR_NAMES) {
+    for (AttributeSchema schema : BioSampleAttributes.getAttributesOfType(AttributeType.TERM)) {
+      String attrName = schema.getName();
       Attribute attribute = map.get(attrName);
       AttributeValidationReport report;
       if (attribute != null) {
-        Optional<AttributeValidationReport> reportOpt = validateTermAttributes(attribute);
-        report = reportOpt.orElseGet(() -> Utils.getMissingAttributeReport(attribute));
+        report = validateTermAttribute(attribute, schema);
       } else {
         report = Utils.getMissingAttributeReport(attrName);
       }
       termAttributeReports.add(report);
     }
-    return termAttributeReports;
+    return new AttributeGroupValidationReport(AttributeType.TERM.name().toLowerCase(), termAttributeReports);
   }
 
   @Nonnull
-  private List<AttributeValidationReport> validateIntegerAttributes(@Nonnull Map<String, Attribute> map) {
+  private AttributeGroupValidationReport validateIntegerAttributes(@Nonnull Map<String, Attribute> map) {
     List<AttributeValidationReport> integerAttributeReports = new ArrayList<>();
-    for (String attrName : INTEGER_ATTR_NAMES) {
+    for (AttributeSchema schema : BioSampleAttributes.getAttributesOfType(AttributeType.INTEGER)) {
+      String attrName = schema.getName();
       Attribute attribute = map.get(attrName);
       AttributeValidationReport report;
       if (attribute != null) {
@@ -97,13 +93,14 @@ public final class GenericValidator extends RecordValidator {
       }
       integerAttributeReports.add(report);
     }
-    return integerAttributeReports;
+    return new AttributeGroupValidationReport(AttributeType.INTEGER.name().toLowerCase(), integerAttributeReports);
   }
 
   @Nonnull
-  private List<AttributeValidationReport> validateBooleanAttributes(@Nonnull Map<String, Attribute> map) {
+  private AttributeGroupValidationReport validateBooleanAttributes(@Nonnull Map<String, Attribute> map) {
     List<AttributeValidationReport> booleanAttributeReports = new ArrayList<>();
-    for (String attrName : BOOLEAN_ATTR_NAMES) {
+    for (AttributeSchema schema : BioSampleAttributes.getAttributesOfType(AttributeType.BOOLEAN)) {
+      String attrName = schema.getName();
       Attribute attribute = map.get(attrName);
       AttributeValidationReport report;
       if (attribute != null) {
@@ -113,99 +110,45 @@ public final class GenericValidator extends RecordValidator {
       }
       booleanAttributeReports.add(report);
     }
-    return booleanAttributeReports;
+    return new AttributeGroupValidationReport(AttributeType.BOOLEAN.name().toLowerCase(), booleanAttributeReports);
   }
 
   @Nonnull
-  private List<AttributeValidationReport> validateValueSetAttributes(@Nonnull Map<String, Attribute> map) {
+  private AttributeGroupValidationReport validateValueSetAttributes(@Nonnull Map<String, Attribute> map) {
     List<AttributeValidationReport> reports = new ArrayList<>();
-    for (String attrName : VALUE_SETS.keySet()) {
+    for (AttributeSchema schema : BioSampleAttributes.getAttributesOfType(AttributeType.VALUE_SET)) {
+      String attrName = schema.getName();
       Attribute attribute = map.get(attrName);
       AttributeValidationReport report;
       if (attribute != null) {
-        report = validateValueSetAttributes(attribute);
+        report = validateValueSetAttribute(attribute, schema);
       } else {
         report = Utils.getMissingAttributeReport(attrName);
       }
       reports.add(report);
     }
-    return reports;
+    return new AttributeGroupValidationReport(AttributeType.VALUE_SET.name().toLowerCase(), reports);
   }
 
   @Nonnull
-  private Optional<AttributeValidationReport> validateOntologyTermAttributes(@Nonnull Attribute attribute) {
-    String attrName = attribute.getName();
-    AttributeValidationReport report = null;
-    if(attrName.equalsIgnoreCase(CHEMICAL_ADMINISTRATION_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(DISEASE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(ENVIRONMENT_BIOME_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "ENVO");
-    }
-    else if(attrName.equalsIgnoreCase(ENVIRONMENT_FEATURE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "ENVO");
-    }
-    else if(attrName.equalsIgnoreCase(ENVIRONMENT_MATERIAL_ATTR_NAME)) {
-     report = validateOntologyTermAttribute(attribute, true, "ENVO");
-    }
-    else if(attrName.equalsIgnoreCase(HOST_DISEASE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "DOID", "MESH");
-    }
-    else if(attrName.equalsIgnoreCase(HOST_TISSUE_SAMPLED_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "BTO");
-    }
-    else if(attrName.equalsIgnoreCase(PHENOTYPE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "PATO");
-    }
-    else if(attrName.equalsIgnoreCase(PLANT_BODY_SITE_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true, "PATO");
-    }
-    else {
-      logger.error("Unexpected attribute named " + attrName + " is not an ontology term attribute");
-    }
-    return Optional.ofNullable(report);
-  }
-
-  @Nonnull
-  private Optional<AttributeValidationReport> validateTermAttributes(@Nonnull Attribute attribute) {
-    String attrName = attribute.getName();
-    AttributeValidationReport report = null;
-    if(attrName.equalsIgnoreCase(BODY_HABITAT_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(GEO_LOCATION_ATTR_NAME)) {
+  private AttributeValidationReport validateTermAttribute(@Nonnull Attribute attribute, @Nonnull AttributeSchema schema) {
+    AttributeValidationReport report;
+    if(schema.getValues().contains("GEOLOC")) {
       report = validateGeographicLocation(attribute);
-    }
-    else if(attrName.equalsIgnoreCase(HEALTH_STATE_ATTR_NAME)) {
+    } else {
       report = validateOntologyTermAttribute(attribute, true);
     }
-    else if(attrName.equalsIgnoreCase(HOST_BODY_HABITAT_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(PATHOGENICITY_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(PLOIDY_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    else if(attrName.equalsIgnoreCase(PROPAGATION_ATTR_NAME)) {
-      report = validateOntologyTermAttribute(attribute, true);
-    }
-    return Optional.ofNullable(report);
+    return report;
   }
 
   @Nonnull
-  private AttributeValidationReport validateValueSetAttributes(@Nonnull Attribute attribute) {
-    String attrName = attribute.getName();
+  private AttributeValidationReport validateValueSetAttribute(@Nonnull Attribute attribute, @Nonnull AttributeSchema schema) {
     String value = attribute.getValue();
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = false;
     String match = null;
-    if(isFilledIn && VALUE_SETS.containsKey(attrName)) {
-      List<String> values = VALUE_SETS.get(attrName);
+    if(isFilledIn) {
+      List<String> values = schema.getValues();
       for(String v : values) {
         if(value.equalsIgnoreCase(v)) {
           isValidFormat = true;
@@ -290,5 +233,4 @@ public final class GenericValidator extends RecordValidator {
     }
     return result;
   }
-
 }

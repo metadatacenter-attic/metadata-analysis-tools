@@ -17,12 +17,9 @@ import java.util.List;
 public class Main {
   private static final Logger logger = LoggerFactory.getLogger(Main.class.getName());
 
-  private static File getFile(String filePath, boolean checkExists) throws IOException {
+  private static File getFile(String filePath) throws IOException {
     if(filePath.trim().isEmpty()) {
       throw new IOException("Must provide a non-empty file path");
-    }
-    else if(checkExists && !new File(filePath).exists()) {
-      throw new IOException("The given file or folder does not exist: " + filePath);
     }
     else {
       File f = new File(filePath);
@@ -38,8 +35,8 @@ public class Main {
     logger.info("Input file: " + inputFilePath);
     logger.info("Output folder: " + outputFolderPath);
 
-    File inputFile = getFile(inputFilePath, true);
-    File outputFolder = getFile(outputFolderPath, true);
+    File inputFile = getFile(inputFilePath);
+    File outputFolder = getFile(outputFolderPath);
 
     Validator validator = new GenericValidator(new TermValidator(new BioPortalAgent(bioPortalApiKey)));
     BioSampleAnalyzer analyzer = new BioSampleAnalyzer(validator);

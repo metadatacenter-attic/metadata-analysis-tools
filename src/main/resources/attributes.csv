@@ -1,0 +1,68 @@
+chem_administration,ontology_term,CHEBI
+disease,ontology_term,DOID|MESH
+env_biome,ontology_term,ENVO
+env_feature,ontology_term,ENVO
+env_material,ontology_term,ENVO
+host_disease,ontology_term,DOID|MESH
+host_tissue_sampled,ontology_term,BTO
+phenotype,ontology_term,PATO
+plant_body_site,ontology_term,PATO
+body_habitat,term,
+geo_loc_name,term,GEOLOC
+health_state,term,
+host_body_habitat,term,
+pathogenicity,term,
+ploidy,term,
+propagation,term,
+extrachrom_elements,integer,
+host_taxid,integer,
+ihmc_medication_code,integer,
+num_replicons,integer,
+occup_samp,integer,
+hysterectomy,boolean,
+medic_hist_perform,boolean,
+smoker,boolean,
+twin_sibling,boolean,
+collection_date,timestamp,
+douche,timestamp,
+extreme_event,timestamp,
+fire,timestamp,
+flooding,timestamp,
+hrt,timestamp,
+menarche,timestamp,
+menopause,timestamp,
+pregnancy,timestamp,
+time_last_toothbrush,timestamp,
+time_since_last_wash,timestamp,
+edta_inhibitor_tested,value_set,yes|no
+beta_lactamase_family,value_set,ACC|ACT|ADC|BEL|CARB|CBP|CFE|CMY|CTX-M|DHA|FOX|GES|GIM|KPC|IMI|IMP|IND|LAT|MIR|MOX|NDM|OXA|PER|PDC|SHV|SME|TEM|VEB|VIM
+dominant_hand,value_set,left|right|ambidextrous
+drainage_class,value_set,very poorly|poorly|somewhat poorly|moderately well|well|excessively drained
+filter_type,value_set,particulate air filter|chemical air filter|low-MERV pleated media|HEPA|electrostatic|gas-phase or ultraviolet air treatments
+heat_cool_type,value_set,radiant system|heat pump|forced air system|steam forced heat|wood stove
+horizon,value_set,O horizon|A horizon|E horizon|B horizon|C horizon|R layer|Permafrost
+host_sex,value_set,male|female|pooled male and female|neuter|hermaphrodite|intersex|not determined
+indoor_space,value_set,bedroom|office|bathroom|foyer|kitchen|locker room|hallway|elevator
+indoor_surf,value_set,counter top|window|wall|cabinet|ceiling|door|shelving|vent cover
+investigation_type,value_set,eukaryote|bacteria_archaea|plasmid|virus|organelle|metagenome|miens-survey|miens-culture
+light_type,value_set,natural light|electric light|no light
+biotic_relationship,value_set,free living|parasite|commensal|symbiont
+oxy_stat_samp,value_set,aerobic|anaerobic
+profile_position,value_set,summit|shoulder|backslope|footslope|toeslope
+rel_to_oxygen,value_set,aerobe|anaerobe|facultative|microaerophilic|microanaerobe|obligate aerobe|obligate anaerobe
+sediment_type,value_set,biogenous|cosmogenous|hydrogenous|lithogenous
+sex,value_set,male|female|pooled male and female|neuter|hermaphrodite|intersex|not determined
+space_typ_state,value_set,typical occupied|typically unoccupied
+substructure_type,value_set,crawlspace|slab on grade|basement
+surf_material,value_set,concrete|wood|stone|tile|plastic|glass|vinyl|metal|carpet|stainless steel|paint|cinder blocks|hay bales|stucco|adobe
+tidal_stage,value_set,low|high
+trophic_level,value_set,autotroph|carboxydotroph|chemoautotroph|chemoheterotroph|chemolithoautotroph|chemolithotroph|chemoorganoheterotroph|chemoorganotroph|chemosynthetic|chemotroph|copiotroph|diazotroph|facultative|heterotroph|lithoautotroph|lithoheterotroph|lithotroph|methanotroph|methylotroph|mixotroph|obligate|chemoautolithotroph|oligotroph|organoheterotroph|organotroph|photoautotroph|photoheterotroph|photolithoautotroph|photolithotroph|photosynthetic|phototroph
+urine_collect_meth,value_set,clean catch|catheter
+tillage,value_set,drill|cutting disc|ridge till|strip tillage|zonal tillage|chisel|tined|mouldboard|disc plough
+super_population_code,value_set,AFR|AMR|EAS|EUR|SAS
+super_population_description,value_set,African|Ad Mixed American|East Asian|European|South Asian
+build_occup_type,value_set,office|market|restaurant|residence|school|residential|commercial|low rise|high rise|wood framed|health care|airport|sports complex
+building_setting,value_set,urban|suburban|exurban|rural
+carbapenemase,value_set,yes|no
+env_package,value_set,air|host-associated|human-associated|human-skin|human-oral|human-gut|human-vaginal|microbial|miscellaneous|plant-associated|sediment|soil|wastewater|water
+surf_air_cont,value_set,dust|organic matter|particulate matter|volatile organic compounds|biological contaminants|radon|nutrients|biocides
