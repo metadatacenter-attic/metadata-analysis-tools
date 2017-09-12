@@ -80,4 +80,9 @@ public class BioSampleAttributes {
     }
     return attributesMap.get(type);
   }
+
+  @Nonnull
+  static Set<AttributeType> getAttributeTypes() {
+    return attributesMap.keySet();
+  }
 }
