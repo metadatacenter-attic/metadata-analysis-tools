@@ -47,6 +47,10 @@ public class Utils {
     }
   }
 
+  public static boolean isInvalidEntry(String s) {
+    return invalidAttributeEntries.contains(s);
+  }
+
   public static Set<String> getInvalidEntries() {
     return invalidAttributeEntries;
   }

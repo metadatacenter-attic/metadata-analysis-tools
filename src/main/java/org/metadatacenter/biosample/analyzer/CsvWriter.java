@@ -6,6 +6,7 @@ import com.google.common.base.Objects;
 import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -18,6 +19,7 @@ public class CsvWriter {
   @Nonnull private final File outputFolder;
   @Nonnull private BufferedWriter recordWriter;
   @Nonnull private BufferedWriter attributeWriter;
+  @Nonnull private final static Pattern p = Pattern.compile("\"");
   private int attributeCounter = 1;
 
   public CsvWriter(@Nonnull File outputFolder) {
@@ -90,9 +92,10 @@ public class CsvWriter {
 
   public void writeCell(@Nonnull Writer writer, @Nonnull String cellText, boolean includeComma) {
     // replace quotes from cell text with single quotes
-    cellText = cellText.replaceAll("\"", "'");
+    String cellTextClean = p.matcher(cellText).replaceAll("'");
     try {
-      writer.write("\"" + cellText + "\"" + (includeComma ? "," : ""));
+      String output = "\"" + cellTextClean + "\"" + (includeComma ? "," : "");
+      writer.write(output);
       writer.flush();
     } catch (IOException e) {
       e.printStackTrace();

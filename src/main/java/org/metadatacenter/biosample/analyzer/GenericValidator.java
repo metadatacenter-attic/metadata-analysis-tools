@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -19,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class GenericValidator implements Validator {
   @Nonnull private static final Logger logger = LoggerFactory.getLogger(GenericValidator.class.getName());
   @Nonnull private final TermValidator termValidator;
+  @Nonnull private final static Pattern p1 = Pattern.compile("\\["), p2 = Pattern.compile("]");
 
   public GenericValidator(@Nonnull TermValidator termValidator) {
     this.termValidator = checkNotNull(termValidator);
@@ -112,7 +116,7 @@ public final class GenericValidator implements Validator {
     boolean isFilledIn = isFilledIn(value);
     boolean isValidFormat = false;
     String match = null;
-    if(isFilledIn) {
+    if(isFilledIn && !Utils.isInvalidEntry(value)) {
       TermValidationReport report;
       if (ontologies.length > 0) {
         report = termValidator.validateTerm(normalize(value), exactMatch, ontologies);
@@ -179,8 +183,8 @@ public final class GenericValidator implements Validator {
 
   @Nonnull
   private String normalize(@Nonnull String str) {
-    String result = str.replaceAll("\\[", "");
-    result = result.replaceAll("]", "");
+    String r = p1.matcher(str).replaceAll("");
+    String result = p2.matcher(r).replaceAll("");
     if (result.contains(":")) {
       result = result.substring(result.indexOf(":")+1, result.length());
     }
@@ -213,19 +217,18 @@ public final class GenericValidator implements Validator {
     }
   }
 
+  private final Pattern datePattern = Pattern.compile("(^\\d{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(" +
+      "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(\\d{4})$");
+
+  private final Pattern isoPattern = Pattern.compile("(^(\\d{4})\\D?(0[1-9]|1[0-2])\\D?([12]\\d|0[1-9]|3[01])(\\D?" +
+      "([01]\\d|2[0-3])\\D?([0-5]\\d)\\D?([0-5]\\d)?\\D?(\\d{3})?)?)|(\\d{4}-\\d{2}-\\d{2})|(\\d{4}-\\d{2})$");
+
   /**
    * Check that date of sampling is in "DD-Mmm-YYYY", "Mmm-YYYY" or "YYYY" format (eg., 30-Oct-1990, Oct-1990 or 1990) or
    * ISO 8601 standard "YYYY-mm-dd", "YYYY-mm" or "YYYY-mm-ddThh:mm:ss" (eg., 1990-10-30, 1990-10 or 1990-10-30T14:41:36)
    */
   private boolean isValidDateFormat(String date) {
-    Pattern datePattern = Pattern.compile("(^\\d{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(" +
-        "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\\d{4})|(\\d{4})$");
-    if(datePattern.matcher(date).matches()) {
-      return true;
-    }
-    Pattern isoPattern = Pattern.compile("(^(\\d{4})\\D?(0[1-9]|1[0-2])\\D?([12]\\d|0[1-9]|3[01])(\\D?" +
-        "([01]\\d|2[0-3])\\D?([0-5]\\d)\\D?([0-5]\\d)?\\D?(\\d{3})?)?)|(\\d{4}-\\d{2}-\\d{2})|(\\d{4}-\\d{2})$");
-    return isoPattern.matcher(date).matches();
+    return datePattern.matcher(date).matches() || isoPattern.matcher(date).matches();
   }
 
   /**

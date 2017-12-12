@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,15 +22,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Immutable
 public final class TermValidator {
   @Nonnull private final BioPortalAgent bioPortalAgent;
+  @Nonnull private final static Pattern p1 = Pattern.compile(" ");
+  @Nonnull private final static Pattern p2 = Pattern.compile("%");
+  @Nonnull private final static Pattern p3 = Pattern.compile("\\.");
 
   public TermValidator(@Nonnull BioPortalAgent bioPortalAgent) {
     this.bioPortalAgent = checkNotNull(bioPortalAgent);
   }
 
   public TermValidationReport validateTerm(@Nonnull String term, boolean exactMatch, @Nonnull String... ontologies) {
-    String searchString = term.replaceAll(" ", "+");
-    searchString = searchString.replaceAll("%", "");
-    searchString = searchString.replaceAll("\\.", "");
+    String searchString = p1.matcher(term).replaceAll("+");
+    searchString = p2.matcher(searchString).replaceAll("");
+    searchString = p3.matcher(searchString).replaceAll("");
 
     Optional<JsonNode> searchResult = Optional.empty();
     if(!searchString.trim().isEmpty()) {
