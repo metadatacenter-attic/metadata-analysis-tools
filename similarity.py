@@ -29,3 +29,7 @@ for cluster_id in np.unique(affprop.labels_):
     cluster = np.unique(words[np.nonzero(affprop.labels_==cluster_id)])
     cluster_str = ", ".join(cluster)
     print(" - %s: %s" % (exemplar, cluster_str))
+
+cluster_centers_indices = affprop.cluster_centers_indices_
+n_clusters_ = len(cluster_centers_indices)
+print('Estimated number of clusters: %d' % n_clusters_)
