@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Provides StringClusters class.
 
-StringClusters is a tool for comparing strings using word embeddings and cosine similarity, and for clustering
-strings using affinity propagation according to the pairwise distances between them. These similarity distances
-can be computed using the provided word embedding-based method, or using some other distance metric whose weights
+StringClusters is a tool for comparing strings using Levenshtein edit distance or Euclidean distance (based on word
+embeddings), and for clustering strings using affinity propagation according to the pairwise distances between them.
+These distances can be computed using one of the provided methods, or using some other distance metric whose weights
 can be used by this tool (programmatically) to do the clustering.
 
 Example usage:
@@ -11,8 +11,11 @@ Example usage:
     Cluster the list of strings in a file named "foods.txt" in the current directory:
     >> python stringclusters.py -i foods.txt
 
-    Cluster the list of strings in a file named "clothes.txt" and save the clusters to a file named "clusters.json":
-    >> python stringclusters.py -i clothes.txt -o /home/user/documents/clusters.json
+    Cluster the list of strings in a file named "foods.txt" and save the clusters to a file named "clusters.json":
+    >> python stringclusters.py -i foods.txt -o /home/user/documents/clusters.json
+
+    Cluster the list of strings in a file named "foods.txt" using Euclidean distance:
+    >> python stringclusters.py -i foods.txt -d euclidean
 
     Compare a string "ham pizza" with all strings in a file named "foods.txt" in the current directory:
     >> python stringclusters.py -i foods.txt -s "ham pizza"
@@ -50,6 +53,7 @@ class StringClusters:
         self.vectors = dict()
         self.pattern = re.compile('([^\s\w]|_)+')  # regular expression to normalize input strings
 
+    # takes a collection of tokens and computes the pairwise Levenshtein edit distance between all tokens
     def get_edit_distances(self, all_tokens):
         words = np.asarray(all_tokens)
         distances = -1 * np.array([[editdistance.eval(w1, w2) for w1 in words] for w2 in words])
@@ -114,7 +118,7 @@ class StringClusters:
             clusters[exemplar] = cluster.tolist()
         return clusters
 
-    # convenience function to compare tokens using word embeddings, and to cluster them afterwards
+    # convenience function to compare tokens using the given distance metric, and to cluster them afterwards
     def compare_and_cluster(self, tokens, distance_metric):
         tokens = self.normalize_tokens(tokens)
         if distance_metric == Distance.EDIT:
