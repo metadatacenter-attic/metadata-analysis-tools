@@ -141,11 +141,11 @@ def get_arguments():
     timestamp = datetime.datetime.now().isoformat().replace(":", "-")
     default_output_file = "stringclusters_output_" + timestamp + ".json"
     parser = argparse.ArgumentParser(
-        description="StringClusters is a tool for comparing strings using word embeddings and cosine similarity, and "
-                    "for clustering strings using affinity propagation according to the pairwise distances between "
-                    "them. These similarity distances can be computed using the provided word embedding-based method, "
-                    "or using some other distance metric whose weights can be passed on to this tool (programmatically)"
-                    " to do the clustering.")
+        description="StringClusters is a tool for comparing strings using Levenshtein edit distance or Euclidean "
+                    "distance (based on word embeddings), and for clustering strings using affinity propagation "
+                    "according to the pairwise distances between them. These distances can be computed using one of "
+                    "the provided methods, or using some other distance metric whose weights can be used by this tool "
+                    "(programmatically) to do the clustering.")
     parser.add_argument("-i", "--input_file", required=True, type=str,
                         help="Input file containing list of strings (one per line)")
     parser.add_argument("-o", "--output_file", required=False, type=str, default=default_output_file,
