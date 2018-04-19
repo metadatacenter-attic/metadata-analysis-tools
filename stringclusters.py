@@ -55,8 +55,7 @@ class StringClusters:
 
     # takes a collection of tokens and computes the pairwise Levenshtein edit distance between all tokens
     def get_edit_distances(self, all_tokens):
-        words = np.asarray(all_tokens)
-        distances = -1 * np.array([[editdistance.eval(w1, w2) for w1 in words] for w2 in words])
+        distances = -1 * np.array([[editdistance.eval(w1, w2) for w1 in all_tokens] for w2 in all_tokens])
         return distances
 
     # takes a collection of plain text tokens and computes pairwise similarity between all tokens
