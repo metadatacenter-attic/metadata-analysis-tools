@@ -102,9 +102,10 @@ class StringClusters:
             normalized_tokens.append(self.normalize(token))
         return normalized_tokens
 
-    # replace all non-alphanumeric characters with spaces
+    # replace all non-alphanumeric characters with spaces, and trim all extra white spaces and tabs
     def normalize(self, token):
-        return self.pattern.sub(' ', token)
+        token = self.pattern.sub(' ', token)
+        return re.sub('\s+', ' ', token).strip()
 
     # cluster the given tokens according to their similarity distances. returns a dictionary that maps each cluster
     # exemplar to an array of cluster elements that the exemplar represents
