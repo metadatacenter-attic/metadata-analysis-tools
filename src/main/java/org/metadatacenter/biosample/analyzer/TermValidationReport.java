@@ -22,9 +22,9 @@ public final class TermValidationReport {
 
   public TermValidationReport(@Nonnull String matchValue, boolean isFromOntology, boolean isOwlClass, boolean iriResolves) {
     this.matchValue = checkNotNull(matchValue);
-    this.isFromOntology = checkNotNull(isFromOntology);
-    this.isOwlClass = checkNotNull(isOwlClass);
-    this.iriResolves = checkNotNull(iriResolves);
+    this.isFromOntology = isFromOntology;
+    this.isOwlClass = isOwlClass;
+    this.iriResolves = iriResolves;
   }
 
   @Nonnull
@@ -45,7 +45,7 @@ public final class TermValidationReport {
   }
 
   public boolean isResolvableOntologyClass() {
-    return isFromOntology && isOwlClass && iriResolves;
+    return isFromOntology() && isOwlClass() && iriResolves();
   }
 
   @Override

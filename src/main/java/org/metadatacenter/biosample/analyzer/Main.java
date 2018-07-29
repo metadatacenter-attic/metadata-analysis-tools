@@ -2,9 +2,7 @@ package org.metadatacenter.biosample.analyzer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +26,7 @@ public class Main {
     }
   }
 
-  public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException, InvalidPackageException {
+  public static void main(String[] args) throws IOException {
     String inputFilePath = args[0];
     String outputFolderPath = args[1];
     String bioPortalApiKey = args[2];

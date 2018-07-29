@@ -12,10 +12,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Stanford University
  */
 public class Utils {
-  public static final String LOCATION_SEPARATOR = ":";
+  @Nonnull public static final String LOCATION_SEPARATOR = ":";
 
-  private static Set<String> invalidAttributeEntries = new HashSet<>();
-  private static List<String> validLocations = new ArrayList<>();
+  @Nonnull private static Set<String> invalidAttributeEntries = new HashSet<>();
+  @Nonnull private static List<String> validLocations = new ArrayList<>();
 
   static {
     invalidAttributeEntries.add("not applicable");
@@ -47,26 +47,43 @@ public class Utils {
     }
   }
 
+  @Nonnull
   public static boolean isInvalidEntry(String s) {
     return invalidAttributeEntries.contains(s);
   }
 
+  @Nonnull
   public static Set<String> getInvalidEntries() {
     return invalidAttributeEntries;
   }
 
+  @Nonnull
   public static List<String> getValidLocations() {
     return validLocations;
   }
 
+  @Nonnull
   public static AttributeValidationReport getMissingAttributeReport(@Nonnull String attrName) {
     checkNotNull(attrName);
     return getMissingAttributeReport(new AttributeImpl(attrName, attrName, attrName, ""));
   }
 
+  @Nonnull
   public static AttributeValidationReport getMissingAttributeReport(@Nonnull Attribute attribute) {
     checkNotNull(attribute);
     return new AttributeValidationReport(attribute, false, false, Optional.empty());
   }
 
+  @Nonnull
+  public static List<String> parseFile(@Nonnull File file) throws IOException {
+    List<String> lineList = new ArrayList<>();
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    String line = reader.readLine();
+    while(line != null) {
+      lineList.add(line);
+      line = reader.readLine();
+    }
+    reader.close();
+    return lineList;
+  }
 }

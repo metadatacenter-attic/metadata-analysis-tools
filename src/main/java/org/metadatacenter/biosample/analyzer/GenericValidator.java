@@ -227,7 +227,7 @@ public final class GenericValidator implements Validator {
    * Check that date of sampling is in "DD-Mmm-YYYY", "Mmm-YYYY" or "YYYY" format (eg., 30-Oct-1990, Oct-1990 or 1990) or
    * ISO 8601 standard "YYYY-mm-dd", "YYYY-mm" or "YYYY-mm-ddThh:mm:ss" (eg., 1990-10-30, 1990-10 or 1990-10-30T14:41:36)
    */
-  private boolean isValidDateFormat(String date) {
+  public boolean isValidDateFormat(String date) {
     return datePattern.matcher(date).matches() || isoPattern.matcher(date).matches();
   }
 

@@ -19,6 +19,7 @@ public class BioSampleAttributes {
   @Nonnull private final static Logger logger = LoggerFactory.getLogger(BioSampleAttributes.class.getName());
   @Nonnull private final static String ATTRIBUTES_FILE = "attributes.csv";
   @Nonnull private static Map<AttributeType, List<AttributeSchema>> attributesMap = new HashMap<>();
+  @Nonnull private static Map<String,AttributeType> attributeNames = new HashMap<>();
 
   static {
     try {
@@ -29,6 +30,7 @@ public class BioSampleAttributes {
         String[] tokens = line.split(",");
         String attributeName = tokens[0];
         AttributeType attributeType = getAttributeType(tokens[1]);
+        attributeNames.put(attributeName, attributeType);
         List<String> values;
         if(tokens.length > 2) {
           values = getAttributeValues(tokens[2]);
@@ -79,6 +81,30 @@ public class BioSampleAttributes {
       return Collections.emptyList();
     }
     return attributesMap.get(type);
+  }
+
+  @Nonnull
+  static List<String> getAttributeNamesOfType(@Nonnull AttributeType type) {
+    if(!attributesMap.containsKey(type)) {
+      logger.error("The requested attribute type does not exist in the attributes map");
+      return Collections.emptyList();
+    }
+    List<AttributeSchema> as = attributesMap.get(type);
+    List<String> output = new ArrayList<>();
+    for(AttributeSchema s : as) {
+      output.add(s.getName());
+    }
+    return output;
+  }
+
+  @Nonnull
+  static Set<String> getAttributeNames() {
+    return attributeNames.keySet();
+  }
+
+  @Nonnull
+  static AttributeType getAttributeTypeForName(@Nonnull String attribute) {
+    return attributeNames.get(attribute);
   }
 
   @Nonnull

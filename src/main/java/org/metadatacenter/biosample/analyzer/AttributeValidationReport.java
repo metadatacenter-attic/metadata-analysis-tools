@@ -23,8 +23,8 @@ public final class AttributeValidationReport {
 
   public AttributeValidationReport(@Nonnull Attribute attribute, boolean isFilledIn, boolean isValidFormat, Optional<String> matchValue) {
     this.attribute = checkNotNull(attribute);
-    this.isFilledIn = checkNotNull(isFilledIn);
-    this.isValidFormat = checkNotNull(isValidFormat);
+    this.isFilledIn = isFilledIn;
+    this.isValidFormat = isValidFormat;
     this.matchValue = checkNotNull(matchValue);
   }
 
