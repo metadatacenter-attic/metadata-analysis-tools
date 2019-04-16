@@ -59,11 +59,12 @@ public final class TermValidator {
       boolean isOntology = isOntology(ontologyType);
 
       String value = node.get("@id").textValue();
+      String label = node.get("prefLabel").textValue();
 
-      return new TermValidationReport(value, isOntology, isOWLClass, true); // IRIs from BioPortal are resolvable
+      return new TermValidationReport(value, label, isOntology, isOWLClass, true); // IRIs from BioPortal are resolvable
     }
     else {
-      return new TermValidationReport("", false, false, false);
+      return new TermValidationReport("",  "",false, false, false);
     }
   }
 
@@ -108,5 +109,17 @@ public final class TermValidator {
     return MoreObjects.toStringHelper(this)
         .add("bioPortalAgent", bioPortalAgent)
         .toString();
+  }
+
+  
+  /* Main */
+  public static void main(String[] args) {
+    String term = args[0];
+    boolean exactMatch = Boolean.parseBoolean(args[1]);
+    String bioPortalApiKey = args[2];
+
+    TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
+    TermValidationReport report = validator.validateTerm(term, exactMatch);
+    System.out.println(report.toString());
   }
 }
