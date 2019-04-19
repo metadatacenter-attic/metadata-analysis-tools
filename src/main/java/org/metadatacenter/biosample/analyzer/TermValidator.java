@@ -137,9 +137,11 @@ public final class TermValidator {
     BufferedReader br = new BufferedReader(new FileReader(ifname));
     String line;
     while ((line = br.readLine()) != null) {
-      String index = line.split("\t",1)[0];
-      String filename = line.split("\t",2)[1];
-      String keyword = line.split("\t",3)[3];
+      String cols[] = line.split("\t",0);
+      if (cols.length<3) continue; // title line
+      String index = cols[0];
+      String filename = cols[1];
+      String keyword = cols[2];
       index_list.add(index);
       files_list.add(filename);
       keywords_list.add(keyword);
