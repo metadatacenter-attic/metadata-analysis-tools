@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
+// import org.apache.commons.cli.CommandLine;
+
 // import java.io.IOException;
 
 /**
@@ -121,14 +123,25 @@ public final class TermValidator {
     return MoreObjects.toStringHelper(this).add("bioPortalAgent", bioPortalAgent).toString();
   }
 
+  // public static CommandLine parseArgs(String[] args) {
+  //   Options options = new Options();
+  //   options.addOption("ifname",)
+  // }
+
   /* Main */
   public static void main(String[] args) throws IOException, InterruptedException {
     // String term = args[0];
     // boolean exactMatch = Boolean.parseBoolean(args[1]);
     String ifname = args[0];
     String ofname = args[1];
+    int startIdx = 0;
+    Boolean lauraKey = Boolean.parseBoolean(args[2]);
+    
     boolean exactMatch = true;
-    String bioPortalApiKey = "b0363744-e6d9-4cd5-a7a8-f3a118ee3049";
+    String rafaelApiKey = "b0363744-e6d9-4cd5-a7a8-f3a118ee3049";
+    String lauraApiKey = "473c78b3-0265-4bdd-afa0-f83e3ca0dcf7";
+
+    String bioPortalApiKey = (lauraKey) ? lauraApiKey : rafaelApiKey;
 
     ArrayList<String> index_list = new ArrayList<String>();
     ArrayList<String> files_list = new ArrayList<String>();
@@ -152,6 +165,7 @@ public final class TermValidator {
     FileWriter fw = new FileWriter(ofname);
     for (int i=0; i<keywords_list.size(); i++){
       String idx = index_list.get(i);
+      if (Integer.parseInt(idx)<startIdx) continue;
       String fname = files_list.get(i);
       String term = keywords_list.get(i);
 
