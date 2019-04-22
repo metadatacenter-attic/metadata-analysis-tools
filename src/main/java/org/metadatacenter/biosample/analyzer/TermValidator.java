@@ -123,7 +123,7 @@ public final class TermValidator {
     return MoreObjects.toStringHelper(this).add("bioPortalAgent", bioPortalAgent).toString();
   }
 
-  public static void runMeshKeywords(String []args) throws IOException {
+  public static void runMeshKeywords(String []args) throws IOException, InterruptedException {
         // String term = args[0];
     // boolean exactMatch = Boolean.parseBoolean(args[1]);
     String ifname = args[0];
@@ -214,7 +214,8 @@ public final class TermValidator {
     String line;
     while ((line = br.readLine()) != null) {
       String cols[] = line.split("\t",0);
-      if (cols.length<3) continue; // title line
+      if (cols[0]=="filename") continue; // title line
+      // System.out.println(line);
       String index = cols[0];
       String filename = cols[1];
       String keyword = cols[2];
@@ -260,7 +261,7 @@ public final class TermValidator {
           continue;
         }
       }
-      fw.write(idx+","+fname+","+term+","+snomedReport.getMatchValue()+","+snomedReport.getMatchLabel()+meshReport.getMatchValue()+","+meshReport.getMatchLabel()+"\n");
+      fw.write(idx+","+fname+","+term+","+snomedReport.getMatchValue()+","+snomedReport.getMatchLabel()+","+meshReport.getMatchValue()+","+meshReport.getMatchLabel()+"\n");
     }
     fw.close();
   }
