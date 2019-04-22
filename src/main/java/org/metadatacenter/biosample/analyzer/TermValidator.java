@@ -261,7 +261,7 @@ public final class TermValidator {
           continue;
         }
       }
-      fw.write(idx+","+fname+","+term+","+snomedReport.getMatchValue()+","+snomedReport.getMatchLabel()+","+meshReport.getMatchValue()+","+meshReport.getMatchLabel()+"\n");
+      fw.write(idx+"\t"+fname+"\t"+term+"\t"+snomedReport.getMatchValue()+"\t"+snomedReport.getMatchLabel()+"\t"+meshReport.getMatchValue()+"\t"+meshReport.getMatchLabel()+"\n");
     }
     fw.close();
   }
