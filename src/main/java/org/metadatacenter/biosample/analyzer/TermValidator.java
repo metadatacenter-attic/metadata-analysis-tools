@@ -193,12 +193,30 @@ public final class TermValidator {
     fw.close();
   }
 
+  public static int getStartIndex(String ofname) throws IOException {
+    File tempFile = new File(ofname);
+    if (!tempFile.exists()) {
+      System.out.println("Could not find output file to resume, starting from index 0...\n");
+      return 0;
+    }
+    BufferedReader br = new BufferedReader(new FileReader(ofname));
+    String currLine;
+    String lastLine = "";
+    while ((currLine = br.readLine()) != null) {
+      lastLine = currLine;
+    }
+    br.close();
+    int startIdx = Integer.parseInt(lastLine.split(",")[0])+1;
+    System.out.println("Resuming "+ofname+" from index "+startIdx);
+    return startIdx;
+  }
+
   /* Main */
   public static void main(String[] args) throws IOException, InterruptedException {
     String ifname = args[0];
     String ofname = args[1];
-    int startIdx = 0;
     Boolean lauraKey = Boolean.parseBoolean(args[2]);
+    int startIdx = getStartIndex(ofname);
     
     boolean exactMatch = true;
     String rafaelApiKey = "b0363744-e6d9-4cd5-a7a8-f3a118ee3049";
@@ -226,7 +244,7 @@ public final class TermValidator {
     br.close();
     
     TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
-    FileWriter fw = new FileWriter(ofname);
+    FileWriter fw = new FileWriter(ofname,true);
     for (int i=0; i<keywords_list.size(); i++){
       String idx = index_list.get(i);
       if (Integer.parseInt(idx)<startIdx) continue;
@@ -240,7 +258,7 @@ public final class TermValidator {
 
       TermValidationReport meshReport;
       TermValidationReport snomedReport;
-      TermValidationReport otherReport;
+      // TermValidationReport otherReport;
       int num_retries = 0;
       while (true) {
         try {
