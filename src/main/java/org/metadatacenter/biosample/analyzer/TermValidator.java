@@ -193,26 +193,7 @@ public final class TermValidator {
     fw.close();
   }
 
-  public static int getStartIndex(String ofname) throws IOException {
-    File tempFile = new File(ofname);
-    if (!tempFile.exists()) {
-      System.out.println("Could not find output file to resume, starting from index 0...\n");
-      return 0;
-    }
-    BufferedReader br = new BufferedReader(new FileReader(ofname));
-    String currLine;
-    String lastLine = "";
-    while ((currLine = br.readLine()) != null) {
-      lastLine = currLine;
-    }
-    br.close();
-    int startIdx = Integer.parseInt(lastLine.split(",")[0])+1;
-    System.out.println("Resuming "+ofname+" from index "+startIdx);
-    return startIdx;
-  }
-
-  /* Main */
-  public static void main(String[] args) throws IOException, InterruptedException {
+  public static void runCondition(String[] args) throws IOException, InterruptedException {
     String ifname = args[0];
     String ofname = args[1];
     Boolean lauraKey = Boolean.parseBoolean(args[2]);
@@ -230,7 +211,7 @@ public final class TermValidator {
 
     BufferedReader br = new BufferedReader(new FileReader(ifname));
     String line;
-    while ((line = br.readLine()) != null) {
+    while (((line = br.readLine()) != null) && line != ""){
       String cols[] = line.split("\t",0);
       if (cols[0]=="filename") continue; // title line
       // System.out.println(line);
@@ -272,7 +253,7 @@ public final class TermValidator {
             fw.close();
             return;
           }
-          System.out.println("Caught system error trying to validate term, retrying in 30 seconds with new agent...");
+          System.out.println("Caught system error trying to validate "+term+" retrying in 30 seconds with new agent...");
           num_retries++;
           Thread.sleep(30000);
           validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
@@ -280,6 +261,97 @@ public final class TermValidator {
         }
       }
       fw.write(idx+"\t"+fname+"\t"+term+"\t"+snomedReport.getMatchValue()+"\t"+snomedReport.getMatchLabel()+"\t"+meshReport.getMatchValue()+"\t"+meshReport.getMatchLabel()+"\n");
+    }
+    fw.close();    
+  }
+
+  public static int getStartIndex(String ofname) throws IOException {
+    File tempFile = new File(ofname);
+    if (!tempFile.exists()) {
+      System.out.println("Could not find output file to resume, starting from index 0...\n");
+      return 0;
+    }
+    BufferedReader br = new BufferedReader(new FileReader(ofname));
+    String currLine;
+    String lastLine = "";
+    while ((currLine = br.readLine()) != null) {
+      lastLine = currLine;
+    }
+    br.close();
+    int startIdx = Integer.parseInt(lastLine.split("\t")[0])+1;
+    System.out.println("Resuming "+ofname+" from index "+startIdx);
+    return startIdx;
+  }
+
+  /* Main */
+  public static void main(String[] args) throws IOException, InterruptedException {
+    String ifname = args[0];
+    String ofname = args[1];
+    Boolean lauraKey = Boolean.parseBoolean(args[2]);
+    int startIdx = getStartIndex(ofname);
+    
+    boolean exactMatch = true;
+    String rafaelApiKey = "b0363744-e6d9-4cd5-a7a8-f3a118ee3049";
+    String lauraApiKey = "473c78b3-0265-4bdd-afa0-f83e3ca0dcf7";
+    String lmironApiKey = "5369dc48-a112-458e-aa01-5acb0dd9d3e0";
+
+    String bioPortalApiKey = (lauraKey) ? lauraApiKey : rafaelApiKey;
+
+    ArrayList<String> index_list = new ArrayList<String>();
+    ArrayList<String> files_list = new ArrayList<String>();
+    ArrayList<String> keywords_list = new ArrayList<String>();
+
+    BufferedReader br = new BufferedReader(new FileReader(ifname));
+    String line;
+    while (((line = br.readLine()) != null) && line != ""){
+      String cols[] = line.split("\t",0);
+      if (cols[0]=="filename") continue; // title line
+      // System.out.println(line);
+      String index = cols[0];
+      String filename = cols[1];
+      String itype = cols[2];
+      String keyword = cols[3];
+      index_list.add(index);
+      files_list.add(filename+'\t'+itype);
+      keywords_list.add(keyword);
+    }
+    br.close();
+    
+    TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
+    FileWriter fw = new FileWriter(ofname,true);
+    for (int i=0; i<keywords_list.size(); i++){
+      String idx = index_list.get(i);
+      if (Integer.parseInt(idx)<startIdx) continue;
+      String fname = files_list.get(i);
+      String term = keywords_list.get(i);
+
+      if (i%1000 == 0) {
+        System.out.println(idx+"/"+index_list.get(index_list.size()-1));
+        fw.flush();
+      }
+
+      TermValidationReport report;
+
+      int num_retries = 0;
+      while (true) {
+        try {
+          report = validator.validateTerm(term, exactMatch);
+          break;
+        } catch (Exception e) {
+          if (num_retries >= 10) {
+            System.out.println("Too many retries, exiting...");
+            fw.flush();
+            fw.close();
+            return;
+          }
+          System.out.println("Caught system error trying to validate term, retrying in 30 seconds with new agent...");
+          num_retries++;
+          Thread.sleep(30000);
+          validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
+          continue;
+        }
+      }
+      fw.write(idx+"\t"+fname+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
     }
     fw.close();
   }
