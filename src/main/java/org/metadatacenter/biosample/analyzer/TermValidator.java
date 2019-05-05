@@ -253,7 +253,8 @@ public final class TermValidator {
             fw.close();
             return;
           }
-          System.out.println("Caught system error trying to validate "+term+" retrying in 30 seconds with new agent...");
+          System.out.println("WHat the fuck...");
+          // System.out.println("Caught system error trying to validate "+term+" retrying in 30 seconds with new agent...");
           num_retries++;
           Thread.sleep(30000);
           validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
@@ -321,9 +322,10 @@ public final class TermValidator {
     FileWriter fw = new FileWriter(ofname,true);
     for (int i=0; i<keywords_list.size(); i++){
       String idx = index_list.get(i);
-      if (Integer.parseInt(idx)<startIdx) continue;
+      
       String fname = files_list.get(i);
       String term = keywords_list.get(i);
+      if (Integer.parseInt(idx)<startIdx) continue;
 
       if (i%1000 == 0) {
         System.out.println(idx+"/"+index_list.get(index_list.size()-1));
@@ -336,22 +338,22 @@ public final class TermValidator {
       while (true) {
         try {
           report = validator.validateTerm(term, exactMatch);
+          fw.write(idx+"\t"+fname+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
           break;
         } catch (Exception e) {
-          if (num_retries >= 10) {
-            System.out.println("Too many retries, exiting...");
+          if (num_retries >= 5) {
+            System.out.println("Too many retries, skipping "+term);
             fw.flush();
-            fw.close();
-            return;
+            break;
           }
-          System.out.println("Caught system error trying to validate term, retrying in 30 seconds with new agent...");
+          System.out.println(e);
+          System.out.println("Caught system error trying to validate "+term+", retrying in 30 seconds with new agent...");
           num_retries++;
           Thread.sleep(30000);
           validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
           continue;
         }
       }
-      fw.write(idx+"\t"+fname+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
     }
     fw.close();
   }
