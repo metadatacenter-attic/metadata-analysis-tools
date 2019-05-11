@@ -145,6 +145,16 @@ public final class TermValidator {
   }
 
   /* Main */
+  // public static void main(String[] args) {
+  //   String term = args[0];
+  //   boolean exactMatch = Boolean.parseBoolean(args[1]);
+  //   String bioPortalApiKey = args[2];
+
+  //   TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
+  //   TermValidationReport report = validator.validateTerm(term, exactMatch);
+  //   System.out.println(report.toString());
+  // }
+
   public static void main(String[] args) throws IOException, InterruptedException {
     Path dirname = Paths.get(args[0]);
     Path ifname = dirname.resolve(args[1]);
@@ -176,7 +186,7 @@ public final class TermValidator {
     FileWriter fw = new FileWriter(ofname.toFile(),true);
     for (int i=0; i<keywords_list.size(); i++){
       String idx = index_list.get(i);      
-      String term = keywords_list.get(i);
+      String term = keywords_list.get(i).strip();
       if (Integer.parseInt(idx)<startIdx) continue;
 
       if (i%1000 == 0) {
