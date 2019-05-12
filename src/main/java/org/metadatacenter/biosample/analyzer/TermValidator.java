@@ -23,7 +23,11 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
-// import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 // import java.io.IOException;
 
@@ -125,7 +129,6 @@ public final class TermValidator {
     return MoreObjects.toStringHelper(this).add("bioPortalAgent", bioPortalAgent).toString();
   }
 
-
   /* utils */
   public static int getStartIndex(File f) throws IOException {
     if (!f.exists()) {
@@ -139,35 +142,54 @@ public final class TermValidator {
       lastLine = currLine;
     }
     br.close();
-    int startIdx = Integer.parseInt(lastLine.split("\t")[0])+1;
-    System.out.println("Resuming "+f.getName()+" from index "+startIdx);
+    int startIdx = Integer.parseInt(lastLine.split("\t")[0]) + 1;
+    System.out.println("Resuming " + f.getName() + " from index " + startIdx);
     return startIdx;
   }
 
   /* Main */
-  // public static void main(String[] args) {
-  //   String term = args[0];
-  //   boolean exactMatch = Boolean.parseBoolean(args[1]);
-  //   String bioPortalApiKey = args[2];
+  public static void SearchTerm(String term, boolean exactMatch, String bioPortalApiKey, String ontology) {
+    TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
+    System.out.println(term);
+    TermValidationReport report;
+    if (ontology == null) {
+      report = validator.validateTerm(term, exactMatch);
+    } else {
+      report = validator.validateTerm(term, exactMatch, ontology);
+    }
+    System.out.println(report.toString());
+  }
 
-  //   TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
-  //   TermValidationReport report = validator.validateTerm(term, exactMatch);
-  //   System.out.println(report.toString());
-  // }
+  public static void main(String[] args) throws IOException, InterruptedException, ParseException {
+    Options options = new Options();
+    options.addOption("t", true, "Search a single term");
+    options.addOption("o", true, "Specific bioportal ontology to search, default all ontologies");
+    options.addOption("if", true, "Path to tab-delimited file with index and term to search on each line");
+    options.addOption("of", true, "Path to write results to, if not specific results will be printed to the console");
+    options.addOption("em", true, "[true|false] Whether to search using bioportal's 'exact match'. Default true'");
+    options.addOption("k",true, "Bioportal api key");
+    options.addOption("restart","r",false, "Remove old outfile and start from index 0");
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = parser.parse(options,args);
 
-  public static void main(String[] args) throws IOException, InterruptedException {
-    Path dirname = Paths.get(args[0]);
-    Path ifname = dirname.resolve(args[1]);
-    Path ofname = dirname.resolve(args[2]);
-    Boolean lauraKey = Boolean.parseBoolean(args[2]);
-    int startIdx = getStartIndex(ofname.toFile());
-    
-    boolean exactMatch = true;
-    String rafaelApiKey = "b0363744-e6d9-4cd5-a7a8-f3a118ee3049";
-    String lauraApiKey = "473c78b3-0265-4bdd-afa0-f83e3ca0dcf7";
-    String lmironApiKey = "5369dc48-a112-458e-aa01-5acb0dd9d3e0";
+    boolean exactMatch = (cmd.hasOption("em")) ? Boolean.parseBoolean(cmd.getOptionValue("em")) : true;
+    String bioPortalApiKey = cmd.getOptionValue("k");
+    String ontology = (cmd.hasOption("o")) ? cmd.getOptionValue("o") : null;
 
-    String bioPortalApiKey = (lauraKey) ? lauraApiKey : rafaelApiKey;
+    if (cmd.hasOption("t")) {
+      SearchTerm(cmd.getOptionValue("t"),exactMatch,bioPortalApiKey,ontology);
+      return;
+    }
+
+    Path ifname = Paths.get(cmd.getOptionValue("if"));
+    Path ofname = null;
+    if (cmd.hasOption("of")) {
+      ofname = Paths.get(cmd.getOptionValue("of"));
+      if (cmd.hasOption("restart")) {
+        ofname.toFile().renameTo(ofname.getParent().resolve("dest").toFile());
+      }
+    }
+    int startIdx = (ofname == null) ? 0 : getStartIndex(ofname.toFile());
 
     ArrayList<String> index_list = new ArrayList<String>();
     ArrayList<String> keywords_list = new ArrayList<String>();
@@ -183,23 +205,30 @@ public final class TermValidator {
     br.close();
     
     TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
-    FileWriter fw = new FileWriter(ofname.toFile(),true);
+    FileWriter fw = (ofname != null) ? new FileWriter(ofname.toFile(),true) : null;
     for (int i=0; i<keywords_list.size(); i++){
       String idx = index_list.get(i);      
       String term = keywords_list.get(i).strip();
       if (Integer.parseInt(idx)<startIdx) continue;
-
       if (i%1000 == 0) {
         System.out.println(idx+"/"+index_list.get(index_list.size()-1));
-        fw.flush();
+        if (fw != null) fw.flush();
       }
 
       TermValidationReport report;
       int num_retries = 0;
       while (true) {
         try {
-          report = validator.validateTerm(term, exactMatch);
-          fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
+          if (ontology != null) {
+            report = validator.validateTerm(term, exactMatch, ontology);
+          } else {
+            report = validator.validateTerm(term,exactMatch);
+          }
+          if (fw != null) {
+            fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
+          } else {
+            System.out.println(term + " " + report.toString());
+          }
           break;
         } catch (Exception e) {
           if (num_retries >= 5) {
@@ -216,6 +245,6 @@ public final class TermValidator {
         }
       }
     }
-    fw.close();
+    if (fw != null) fw.close();
   }
 }
