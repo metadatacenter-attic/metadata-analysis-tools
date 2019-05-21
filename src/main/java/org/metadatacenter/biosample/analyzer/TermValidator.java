@@ -1,6 +1,7 @@
 package org.metadatacenter.biosample.analyzer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
@@ -16,10 +17,8 @@ import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
@@ -72,6 +71,7 @@ public final class TermValidator {
     if (searchResult.isPresent() && searchResult.get().elements().hasNext()) {
       // look at the first result from BioPortal
       JsonNode node = searchResult.get().elements().next();
+      System.out.println(node.toString()+"\n\n");
 
       String type = node.get("@type").textValue();
       boolean isOWLClass = isOwlClass(type);
@@ -82,9 +82,24 @@ public final class TermValidator {
       String value = node.get("@id").textValue();
       String label = node.get("prefLabel").textValue();
 
-      return new TermValidationReport(value, label, isOntology, isOWLClass, true); // IRIs from BioPortal are resolvable
+      String ontology = node.get("ontology").textValue();
+      ArrayList<String> cuis = new ArrayList<String>();
+      ArrayList<String> tuis = new ArrayList<String>();
+      JsonNode cuiNode = node.get("cui");
+      JsonNode tuiNode = node.get("tui");
+      if (cuiNode != null) {
+        for (JsonNode objNode : cuiNode) {
+          cuis.add(objNode.textValue());
+        }
+      }
+      if (tuiNode != null) {
+        for (JsonNode objNode : tuiNode) {
+          tuis.add(objNode.textValue());
+        }
+      }
+      return new TermValidationReport(value,label,isOntology,isOWLClass,true,ontology,cuis,tuis);
     } else {
-      return new TermValidationReport("", "", false, false, false);
+      return new TermValidationReport("", "", false, false, false, "", null, null);
     }
   }
 
@@ -148,9 +163,16 @@ public final class TermValidator {
   }
 
   /* Main */
-  public static void SearchTerm(String term, boolean exactMatch, String bioPortalApiKey, String ontology) {
+  public static void OutputResult(TermValidationReport report, FileWriter fw, String idx, String term) throws IOException {
+    if (fw != null) {
+      fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\t"+report.getCuis()+"\t"+report.getSemanticTypes()+"\n");
+    } else {
+      System.out.println(term + " " + report.toString());
+    }
+  }
+
+  public static void SearchTerm(String term, boolean exactMatch, String bioPortalApiKey, String... ontology) {
     TermValidator validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
-    System.out.println(term);
     TermValidationReport report;
     if (ontology == null) {
       report = validator.validateTerm(term, exactMatch);
@@ -169,12 +191,14 @@ public final class TermValidator {
     options.addOption("em", true, "[true|false] Whether to search using bioportal's 'exact match'. Default true'");
     options.addOption("k",true, "Bioportal api key");
     options.addOption("restart","r",false, "Remove old outfile and start from index 0");
+    // options.addOption("allresults","ar",false, "Return results in all ontologies, default first result only");
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options,args);
 
     boolean exactMatch = (cmd.hasOption("em")) ? Boolean.parseBoolean(cmd.getOptionValue("em")) : true;
     String bioPortalApiKey = cmd.getOptionValue("k");
-    String ontology = (cmd.hasOption("o")) ? cmd.getOptionValue("o") : null;
+    String [] ontology = (cmd.hasOption("o")) ? cmd.getOptionValue("o").split(",") : null;
+    // boolean allReults = (cmd.hasOption("ar")) ? true : false;
 
     if (cmd.hasOption("t")) {
       SearchTerm(cmd.getOptionValue("t"),exactMatch,bioPortalApiKey,ontology);
@@ -224,22 +248,18 @@ public final class TermValidator {
           } else {
             report = validator.validateTerm(term,exactMatch);
           }
-          if (fw != null) {
-            fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\n");
-          } else {
-            System.out.println(term + " " + report.toString());
-          }
+          OutputResult(report, fw, idx, term);
           break;
         } catch (Exception e) {
           if (num_retries >= 5) {
             System.out.println("Too many retries, skipping "+term);
-            fw.flush();
+            if (fw != null) fw.flush();
             break;
           }
           System.out.println(e);
           System.out.println("Caught system error trying to validate "+term+", retrying in 30 seconds with new agent...");
           num_retries++;
-          Thread.sleep(30000);
+          // Thread.sleep(30000);
           validator = new TermValidator(new BioPortalAgent(bioPortalApiKey));
           continue;
         }

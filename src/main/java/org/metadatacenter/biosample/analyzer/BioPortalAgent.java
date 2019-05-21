@@ -43,7 +43,7 @@ public final class BioPortalAgent {
   @Nonnull
   public Optional<JsonNode> getResult(@Nonnull String searchString, boolean exactSearch, @Nonnull String ontologies) {
     String query = REST_URL + "/search?q=" + searchString + (exactSearch ? "&require_exact_match=true" : "") + "&ontologies="
-        + ontologies + "&page=1&pagesize=1";
+        + ontologies + "&page=1";
     return runQuery(query);
   }
 
@@ -51,7 +51,7 @@ public final class BioPortalAgent {
   public Optional<JsonNode> runQuery(@Nonnull String query) {
     JsonNode node = jsonToNode(get(query));
     if(node != null) {
-      return Optional.of(node.get("collection"));
+      return Optional.of(node.get("collection").get(0));
     } else {
       return Optional.empty();
     }

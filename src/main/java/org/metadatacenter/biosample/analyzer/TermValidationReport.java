@@ -8,6 +8,8 @@ import javax.annotation.concurrent.Immutable;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
+
 /**
  * @author Rafael Gonçalves <br>
  * Center for Biomedical Informatics Research <br>
@@ -20,13 +22,19 @@ public final class TermValidationReport {
   private final boolean isFromOntology;
   private final boolean isOwlClass;
   private final boolean iriResolves;
+  @Nonnull private final String ontology;
+  private final ArrayList<String> cuis;
+  private final ArrayList<String> semanticTypes;
 
-  public TermValidationReport(@Nonnull String matchValue, @Nonnull String matchLabel, boolean isFromOntology, boolean isOwlClass, boolean iriResolves) {
+  public TermValidationReport(@Nonnull String matchValue, @Nonnull String matchLabel, boolean isFromOntology, boolean isOwlClass, boolean iriResolves, @Nonnull String ontology, ArrayList<String> cuis, ArrayList<String> semanticTypes) {
     this.matchValue = checkNotNull(matchValue);
     this.matchLabel = checkNotNull(matchLabel);
     this.isFromOntology = isFromOntology;
     this.isOwlClass = isOwlClass;
     this.iriResolves = iriResolves;
+    this.ontology = checkNotNull(ontology);
+    this.cuis = cuis;
+    this.semanticTypes = semanticTypes;
   }
 
   @Nonnull
@@ -53,6 +61,19 @@ public final class TermValidationReport {
 
   public boolean isResolvableOntologyClass() {
     return isFromOntology() && isOwlClass() && iriResolves();
+  }
+
+  @Nonnull
+  public String getOntology() {
+    return ontology;
+  }
+
+  public ArrayList<String> getCuis() {
+    return cuis;
+  }
+
+  public ArrayList<String> getSemanticTypes() {
+    return semanticTypes;
   }
 
   @Override
@@ -84,6 +105,9 @@ public final class TermValidationReport {
         .add("isFromOntology", isFromOntology)
         .add("isOwlClass", isOwlClass)
         .add("iriResolves", iriResolves)
+        .add("ontology", ontology)
+        .add("cui", cuis)
+        .add("semanticType", semanticTypes)
         .toString();
   }
 }
