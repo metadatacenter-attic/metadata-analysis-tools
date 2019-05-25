@@ -71,7 +71,6 @@ public final class TermValidator {
     if (searchResult.isPresent() && searchResult.get().elements().hasNext()) {
       // look at the first result from BioPortal
       JsonNode node = searchResult.get().elements().next();
-      System.out.println(node.toString()+"\n\n");
 
       String type = node.get("@type").textValue();
       boolean isOWLClass = isOwlClass(type);
@@ -82,7 +81,11 @@ public final class TermValidator {
       String value = node.get("@id").textValue();
       String label = node.get("prefLabel").textValue();
 
-      String ontology = node.get("ontology").textValue();
+      String ontology = "";
+      JsonNode ontologyNode = node.get("ontology");
+      if (ontologyNode != null) {
+        ontology = ontologyNode.textValue();
+      }
       ArrayList<String> cuis = new ArrayList<String>();
       ArrayList<String> tuis = new ArrayList<String>();
       JsonNode cuiNode = node.get("cui");
