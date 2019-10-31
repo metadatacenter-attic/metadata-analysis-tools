@@ -250,7 +250,8 @@ public final class TermValidator {
   /* Main */
   public static void OutputResult(TermValidationReport report, FileWriter fw, String idx, String term) throws IOException {
     if (fw != null) {
-      fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\t"+report.getCuis()+"\t"+report.getSemanticTypes()+"\t"+report.getOntology()+"\n");
+      // return;
+      fw.write(idx+"\t"+term+"\t"+report.getMatchValue()+"\t"+report.getMatchLabel()+"\t"+report.getCuis()+"\t"+report.getSemanticTypes()+"\n");
     } else {
       System.out.println(term + " " + report.toString());
     }
@@ -276,6 +277,7 @@ public final class TermValidator {
     options.addOption("em", true, "[true|false] Whether to search using bioportal's 'exact match'. Default true'");
     options.addOption("k",true, "Bioportal api key");
     options.addOption("restart","r",false, "Remove old outfile and start from index 0");
+    options.addOption("index",true,"start from index");
     // options.addOption("allresults","ar",false, "Return results in all ontologies, default first result only");
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options,args);
@@ -300,7 +302,13 @@ public final class TermValidator {
         ofname.toFile().renameTo(ofname.getParent().resolve("dest").toFile());
       }
     }
-    int startIdx = (ofname == null) ? 0 : getStartIndex(ofname.toFile());
+    int startIdx = 0;
+    if (cmd.hasOption("index")) {
+      startIdx = Integer.parseInt(cmd.getOptionValue("index"));
+      System.out.println("Starting from index "+startIdx);
+    } else if (ofname != null) {
+      startIdx = getStartIndex(ofname.toFile());
+    }
 
     ArrayList<String> index_list = new ArrayList<String>();
     ArrayList<String> keywords_list = new ArrayList<String>();
@@ -344,7 +352,6 @@ public final class TermValidator {
           } else {
             report = validator.validateTerm(term,exactMatch);
           }
-          System.out.println("shouldn't be here");
           OutputResult(report, fw, idx, term);
           break;
 
