@@ -317,9 +317,9 @@ public final class TermValidator {
     String line;
     while (((line = br.readLine()) != null) && line != ""){
       String cols[] = line.split("\t",0);
-      if (cols.length < 2) continue;
+      if (cols.length < 3) continue;
       index_list.add(cols[0]);
-      keywords_list.add(cols[1]);
+      keywords_list.add(cols[2]);
     }
     br.close();
     
